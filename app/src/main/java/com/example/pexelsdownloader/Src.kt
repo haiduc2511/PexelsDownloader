@@ -7,51 +7,51 @@ import com.google.gson.annotations.SerializedName
 data class Src(
     @SerializedName("original")
     @Expose
-    var original: String? = null,
+    var original: String,
 
     @SerializedName("large2x")
     @Expose
-    var large2x: String? = null,
+    var large2x: String,
 
     @SerializedName("large")
     @Expose
-    var large: String? = null,
+    var large: String,
 
     @SerializedName("medium")
     @Expose
-    var medium: String? = null,
+    var medium: String,
 
     @SerializedName("small")
     @Expose
-    var small: String? = null,
+    var small: String,
 
     @SerializedName("portrait")
     @Expose
-    var portrait: String? = null,
+    var portrait: String,
 
     @SerializedName("square")
     @Expose
-    var square: String? = null,
+    var square: String,
 
     @SerializedName("landscape")
     @Expose
-    var landscape: String? = null,
+    var landscape: String,
 
     @SerializedName("tiny")
     @Expose
-    var tiny: String? = null
+    var tiny: String
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
-        original = parcel.readString(),
-        large2x = parcel.readString(),
-        large = parcel.readString(),
-        medium = parcel.readString(),
-        small = parcel.readString(),
-        portrait = parcel.readString(),
-        square = parcel.readString(),
-        landscape = parcel.readString(),
-        tiny = parcel.readString()
+        original = parcel.readString() ?: "",
+        large2x = parcel.readString() ?: "",
+        large = parcel.readString() ?: "",
+        medium = parcel.readString() ?: "",
+        small = parcel.readString() ?: "",
+        portrait = parcel.readString() ?: "",
+        square = parcel.readString() ?: "",
+        landscape = parcel.readString() ?: "",
+        tiny = parcel.readString() ?: ""
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

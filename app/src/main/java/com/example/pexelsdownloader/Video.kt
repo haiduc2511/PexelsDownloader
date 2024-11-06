@@ -8,10 +8,10 @@ import com.google.gson.annotations.SerializedName
 data class Video(
     @SerializedName("video_files")
     @Expose
-    var videoFiles: List<VideoFile>? = null
+    var videoFiles: List<VideoFile> = emptyList()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        videoFiles = parcel.createTypedArrayList(VideoFile.CREATOR)
+        videoFiles = parcel.createTypedArrayList(VideoFile.CREATOR) ?: emptyList()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
