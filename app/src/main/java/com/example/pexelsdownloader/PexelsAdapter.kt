@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -91,9 +92,16 @@ class PexelsAdapter(
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
 
+        var downloadProgressListener = object : DownloadProgressListener {
+            override fun onProgressFetch(progress: Long) {
+                Toast.makeText(context, "$url đã tải được $progress %", Toast.LENGTH_LONG).show()
+                Log.d("Download listener to adapter", "$url đã tải được $progress %")
+            }
+        }
+
         val myDownloads = Uri.parse("content://downloads/my_downloads")
         context.getContentResolver().registerContentObserver(myDownloads, true, DownloadObserver(
-            Handler(), context, downloadId, downloadManager
+            Handler(), context, downloadId, downloadManager, downloadProgressListener
         ))
 
     }

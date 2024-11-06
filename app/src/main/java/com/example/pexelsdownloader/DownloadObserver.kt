@@ -12,7 +12,8 @@ class DownloadObserver(
     handler: Handler,
     private val context: Context,
     private val downloadId: Long,
-    private val downloadManager: DownloadManager
+    private val downloadManager: DownloadManager,
+    private var downloadProgressListener: DownloadProgressListener
 ) : ContentObserver(handler) {
 
     override fun onChange(selfChange: Boolean, uri: Uri?) {
@@ -31,6 +32,7 @@ class DownloadObserver(
 
                 // Optional: Show progress as a Toast (for demo purposes)
                 Toast.makeText(context, "Download progress: $progress%", Toast.LENGTH_SHORT).show()
+                downloadProgressListener.onProgressFetch(progress);
             }
         }
         cursor?.close()
