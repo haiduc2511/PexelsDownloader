@@ -1,26 +1,19 @@
 package com.example.pexelsdownloader
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pexelsdownloader.databinding.ActivityMainBinding
-import android.util.Log
-import androidx.activity.*
-import androidx.core.graphics.Insets
-import androidx.recyclerview.widget.RecyclerView
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.ArrayList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkPermissions()
 
         // Initialize ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,6 +41,20 @@ class MainActivity : AppCompatActivity() {
         // Call API to get data
         getSearchVideos(25)
     }
+    private val REQUEST_CODE = 1
+    private fun checkPermissions() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE
+            )
+        }
+    }
 
     private fun getSearchVideos(page: Int) {
         pexelsRepository.getVideoSearch("home", page)?.enqueue(object : Callback<PexelsEntity?> {
@@ -59,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                             val videoFiles = video.videoFiles
                             for (videoFile in videoFiles) {
                                 val videoFileLink = videoFile.link ?: ""
-                                if (videoFile.link!!.contains("720")) {
+                                if (videoFile.link!!.contains("360")) {
                                     videoLinks.add(videoFileLink)
                                     Log.d("Link url", videoFileLink)
                                     break

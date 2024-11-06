@@ -1,11 +1,18 @@
 package com.example.pexelsdownloader
 
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -34,7 +41,8 @@ class PexelsAdapter(
         holder.binding.tvDetails.text = videoLink
         holder.binding.button.setOnClickListener({
             Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
-            downloadFileWithOkHttp3(videoLink)
+//            downloadFileWithOkHttp(videoLink)
+            downloadFileToGallery(videoLink)
         })
     }
 
@@ -46,23 +54,48 @@ class PexelsAdapter(
 
     }
 
-    fun downloadFileWithOkHttp3(url: String) {
+    fun downloadFileWithOkHttp(url: String) {
+        // Launch the download operation on a background thread
         val destinationPath = "${context.getExternalFilesDir(null)}/downloaded_file.zip"
-        val client = OkHttpClient()
-        val request = Request.Builder().url(url).build()
+        CoroutineScope(Dispatchers.IO).launch {
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            response.body()?.let { responseBody ->
-                responseBody.byteStream().use { inputStream ->
-                    val file = File(destinationPath)
-                    FileOutputStream(file).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+                    response.body()?.let { responseBody ->
+                        responseBody.byteStream().use { inputStream ->
+                            val file = File(destinationPath)
+                            FileOutputStream(file).use { outputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+                    } ?: throw IOException("Response body is null")
                 }
-            } ?: throw IOException("Response body is null")
+            } catch (e: Exception) {
+                e.printStackTrace() // Handle the exception appropriately in a production app
+            }
         }
+    }
+    fun downloadFileToGallery(url: String) {
+        var fileName = System.currentTimeMillis().toString()
+        val request = DownloadManager.Request(Uri.parse(url))
+        request.setTitle("Downloading $fileName")
+        request.setDescription("Downloading $fileName...")
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName)
+        request.setMimeType("video/mp4")  // Set MIME type for MP4 video file
+
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadId = downloadManager.enqueue(request)
+
+        val myDownloads = Uri.parse("content://downloads/my_downloads")
+        context.getContentResolver().registerContentObserver(myDownloads, true, DownloadObserver(
+            Handler(), context, downloadId, downloadManager
+        ))
+
     }
 
 
