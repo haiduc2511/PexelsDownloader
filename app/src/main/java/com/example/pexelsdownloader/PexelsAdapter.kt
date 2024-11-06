@@ -1,5 +1,6 @@
 package com.example.pexelsdownloader
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
@@ -14,15 +15,17 @@ class PexelsAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PexelsViewHolder {
-        TODO("Not yet implemented")
+        val layoutInflater: LayoutInflater = LayoutInflater.from(parent.context)
+        val binding = ItemPhotoBinding.inflate(layoutInflater, parent, false)
+        return PexelsViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        holder.binding.tvDetails.text = videoLinks[position]
     }
 
     override fun getItemCount(): Int {
-        TODO("Not yet implemented")
+        return videoLinks.size
     }
 
     inner class PexelsViewHolder(val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
