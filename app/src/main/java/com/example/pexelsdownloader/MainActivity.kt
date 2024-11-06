@@ -12,10 +12,15 @@ import android.util.Log
 import androidx.activity.*
 import androidx.core.graphics.Insets
 import androidx.recyclerview.widget.RecyclerView
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.util.ArrayList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set up RecyclerView
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = PexelsAdapter()
+        adapter = PexelsAdapter(this)
         binding.recyclerView.adapter = adapter
 
         // Initialize Repository
@@ -80,4 +85,7 @@ class MainActivity : AppCompatActivity() {
     private fun filterQuality1280_720(videoFiles: List<VideoFile>): VideoFile {
         return videoFiles.firstOrNull { it.link!!.contains("1280_720") } ?: videoFiles[0]
     }
+
+
+
 }
