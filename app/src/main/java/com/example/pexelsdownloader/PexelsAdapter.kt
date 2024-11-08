@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +22,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 class PexelsAdapter(
-    private var context: Context
+    private var context: Context,
 ) : RecyclerView.Adapter<PexelsAdapter.PexelsViewHolder>() {
 
     private var videoLinks: List<String> = emptyList()
@@ -43,7 +44,7 @@ class PexelsAdapter(
         holder.binding.button.setOnClickListener({
             Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
 //            downloadFileWithOkHttp(videoLink)
-            downloadFileToGallery(videoLink)
+            downloadFileToGallery(videoLink, holder)
         })
     }
 
@@ -80,7 +81,7 @@ class PexelsAdapter(
             }
         }
     }
-    fun downloadFileToGallery(url: String) {
+    fun downloadFileToGallery(url: String, holder: PexelsViewHolder) {
         var fileName = System.currentTimeMillis().toString()
         val request = DownloadManager.Request(Uri.parse(url))
         request.setTitle("Downloading $fileName")
@@ -92,8 +93,12 @@ class PexelsAdapter(
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
 
+
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
+
+                holder.binding.tvProgress.text = "$progress %"
+                holder.binding.pbDownloadProgress.progress = progress.toInt()
                 Toast.makeText(context, "$url đã tải được $progress %", Toast.LENGTH_LONG).show()
                 Log.d("Download listener to adapter", "$url đã tải được $progress %")
             }

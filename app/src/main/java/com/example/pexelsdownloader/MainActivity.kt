@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.pexelsdownloader.databinding.ActivityMainBinding
+import com.google.android.material.tabs.TabLayout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: PexelsAdapter
     private lateinit var pexelsRepository: PexelsRepository
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         pexelsRepository = PexelsRepository(this)
 
         // Call API to get data
-        getSearchVideos(25)
+        getSearchVideos(1)
     }
     private val REQUEST_CODE = 1
     private fun checkPermissions() {

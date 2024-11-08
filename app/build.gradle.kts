@@ -56,6 +56,10 @@ dependencies {
     implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation ("io.reactivex.rxjava2:rxjava:2.2.19")
 
+    implementation ("com.google.android.material:material:1.9.0") // TabLayout
+    implementation ("androidx.viewpager2:viewpager2:1.0.0") // ViewPager2
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
