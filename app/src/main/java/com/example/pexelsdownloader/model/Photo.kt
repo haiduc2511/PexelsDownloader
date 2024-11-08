@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.model
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

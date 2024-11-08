@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.adapter
 
 import android.app.DownloadManager
 import android.content.Context
@@ -9,8 +9,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.pexelsdownloader.utils.DownloadObserver
+import com.example.pexelsdownloader.utils.DownloadProgressListener
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,11 +22,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class PexelsAdapter(
+class PexelsVideoAdapter(
     private var context: Context,
-) : RecyclerView.Adapter<PexelsAdapter.PexelsViewHolder>() {
+) : RecyclerView.Adapter<PexelsVideoAdapter.PexelsViewHolder>() {
 
     private var videoLinks: List<String> = emptyList()
+    private var videoProgressMap: Map<String, Int> = HashMap()
 
     fun setVideoLinks(newVideoLinks: List<String>) {
         videoLinks = newVideoLinks
@@ -96,6 +98,7 @@ class PexelsAdapter(
 
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
+                videoProgressMap
 
                 holder.binding.tvProgress.text = "$progress %"
                 holder.binding.pbDownloadProgress.progress = progress.toInt()
@@ -107,7 +110,8 @@ class PexelsAdapter(
         val myDownloads = Uri.parse("content://downloads/my_downloads")
         context.getContentResolver().registerContentObserver(myDownloads, true, DownloadObserver(
             Handler(), context, downloadId, downloadManager, downloadProgressListener
-        ))
+        )
+        )
 
     }
 

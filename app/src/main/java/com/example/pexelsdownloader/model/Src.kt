@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.model
 import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.Expose

@@ -3,26 +3,25 @@ package com.example.pexelsdownloader
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.pexelsdownloader.databinding.ActivityMainBinding
+import com.example.pexelsdownloader.fragment.ImageDownloadFragment
+import com.example.pexelsdownloader.fragment.VideoDownloadFragment
+import com.example.pexelsdownloader.model.VideoFile
 import com.google.android.material.tabs.TabLayout
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter: PexelsAdapter
-    private lateinit var pexelsRepository: PexelsRepository
+    private lateinit var viewPager: ViewPager2
+    private lateinit var tabLayout: TabLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,18 +31,22 @@ class MainActivity : AppCompatActivity() {
         // Initialize ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        initTablayoutViewPager()
         // Set up RecyclerView
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = PexelsAdapter(this)
-        binding.recyclerView.adapter = adapter
-
-        // Initialize Repository
-        pexelsRepository = PexelsRepository(this)
-
-        // Call API to get data
-        getSearchVideos(1)
     }
+    fun initTablayoutViewPager() {
+        viewPager = binding.viewPager
+        tabLayout = binding.tabLayout
+        viewPager.adapter = ViewPagerAdapter(this)
+
+
+        // Kết nối TabLayout với ViewPager2
+        TabLayoutMediator(tabLayout, viewPager) { tab, position -> {}
+            tab.text = if (position == 0) "Image" else "Video"
+        }.attach()
+
+    }
+
     private val REQUEST_CODE = 1
     private fun checkPermissions() {
         if (ContextCompat.checkSelfPermission(
@@ -59,44 +62,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getSearchVideos(page: Int) {
-        pexelsRepository.getVideoSearch("home", page)?.enqueue(object : Callback<PexelsEntity?> {
-            override fun onResponse(call: Call<PexelsEntity?>, response: Response<PexelsEntity?>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val videos = response.body()?.videos
-                    if (videos != null) {
-                        val videoLinks = mutableListOf<String>()
-                        for (video in videos) {
-                            val videoFiles = video.videoFiles
-                            for (videoFile in videoFiles) {
-                                val videoFileLink = videoFile.link ?: ""
-                                if (videoFile.link!!.contains("720")) {
-                                    videoLinks.add(videoFileLink)
-                                    Log.d("Link url", videoFileLink)
-                                    break
-                                }
-                            }
-                        }
-                        Toast.makeText(this@MainActivity, "${videos.size}", Toast.LENGTH_SHORT).show()
-                        adapter.setVideoLinks(videoLinks) // Update adapter with video links
-                    } else {
-                        Toast.makeText(this@MainActivity, "Cannot load videos (fetched but empty)", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(this@MainActivity, "Failed to load videos", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<PexelsEntity?>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
     private fun filterQuality1280_720(videoFiles: List<VideoFile>): VideoFile {
         return videoFiles.firstOrNull { it.link!!.contains("1280_720") } ?: videoFiles[0]
     }
 
+    private inner class ViewPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
+        override fun getItemCount(): Int = 2 // Số tab (fragment)
+
+        override fun createFragment(position: Int): Fragment {
+            return when (position) {
+                0 -> ImageDownloadFragment()  // Tab 1
+                1 -> VideoDownloadFragment() // Tab 2
+                else -> throw IllegalStateException("Unexpected position $position")
+            }
+        }
+    }
 
 
 }

@@ -1,5 +1,6 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.repository
 
+import com.example.pexelsdownloader.model.PexelsEntity
 import io.reactivex.Observable
 import retrofit2.Call
 import retrofit2.http.GET

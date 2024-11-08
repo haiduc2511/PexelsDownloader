@@ -1,6 +1,7 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.repository
 
 import android.content.Context
+import com.example.pexelsdownloader.model.PexelsEntity
 import retrofit2.Call
 
 class PexelsRepository(ctx: Context) {

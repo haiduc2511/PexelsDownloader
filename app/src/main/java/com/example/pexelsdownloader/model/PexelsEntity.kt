@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.model
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
@@ -38,8 +38,8 @@ data class PexelsEntity(
         parcel.readInt(),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.createTypedArrayList(Photo.CREATOR),
-        parcel.createTypedArrayList(Video.CREATOR),
+        parcel.createTypedArrayList(Photo),
+        parcel.createTypedArrayList(Video),
         parcel.readString(),
         parcel.readString())
 

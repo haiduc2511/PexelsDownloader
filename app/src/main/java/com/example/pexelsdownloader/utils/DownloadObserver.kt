@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.utils
 
 import android.app.DownloadManager
 import android.content.Context

@@ -1,4 +1,4 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.model
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -11,7 +11,7 @@ data class Video(
     var videoFiles: List<VideoFile> = emptyList()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        videoFiles = parcel.createTypedArrayList(VideoFile.CREATOR) ?: emptyList()
+        videoFiles = parcel.createTypedArrayList(VideoFile) ?: emptyList()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

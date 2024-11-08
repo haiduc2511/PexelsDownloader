@@ -1,6 +1,8 @@
-package com.example.pexelsdownloader
+package com.example.pexelsdownloader.repository
 
 import android.content.Context
+import com.example.pexelsdownloader.BuildConfig
+import com.example.pexelsdownloader.model.PexelsEntity
 import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
