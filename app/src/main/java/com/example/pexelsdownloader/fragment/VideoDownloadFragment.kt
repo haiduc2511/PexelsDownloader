@@ -38,7 +38,13 @@ class VideoDownloadFragment : Fragment() {
         binding = FragmentVideoDownloadBinding.inflate(layoutInflater)
         context = requireContext()
         initRecyclerView()
+        initFabDownloadAll()
         return binding.root
+    }
+    fun initFabDownloadAll() {
+        binding.fabDownloadAll.setOnClickListener({
+            adapter.downloadAll()
+        })
     }
     fun initRecyclerView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

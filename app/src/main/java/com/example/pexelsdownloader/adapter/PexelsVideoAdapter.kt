@@ -71,7 +71,7 @@ class PexelsVideoAdapter(
     }
 
     fun downloadAll() {
-        for (i in 0..videoLinks.size) {
+        for (i in 0..videoLinks.size - 1) {
             downloadFileToGallery(i)
         }
     }
