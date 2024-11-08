@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pexelsdownloader.adapter.PexelsImageAdapter
 import com.example.pexelsdownloader.model.PexelsEntity
@@ -37,8 +38,15 @@ class ImageDownloadFragment : Fragment() {
         binding = FragmentImageDownloadBinding.inflate(layoutInflater)
         context = requireContext()
         initRecyclerView()
+        initFabDownloadAll()
         return binding.root
     }
+    fun initFabDownloadAll() {
+        binding.fabDownloadAll.setOnClickListener({
+            adapter.downloadAll()
+        })
+    }
+
     fun initRecyclerView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         adapter = PexelsImageAdapter(context)
@@ -58,16 +66,16 @@ class ImageDownloadFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null) {
                     val photos = response.body()?.photos
                     if (photos != null) {
-                        val photoLinks = mutableListOf<String>()
+                        val photoLinks = mutableListOf<ObservableField<String>>()
                         for (photo in photos) {
                             val src = photo.src
                             val srcLink :String = src?.large2x ?: ""
-                            photoLinks.add(srcLink)
-                            Log.d("Link url", srcLink)
+                            photoLinks.add(ObservableField(srcLink))
+                            Log.d("Link url photo", srcLink)
 
                         }
                         Toast.makeText(context, "${photos.size}", Toast.LENGTH_SHORT).show()
-                        adapter.setVideoLinks(photoLinks) // Update adapter with video links
+                        adapter.setImageLinks(photoLinks) // Update adapter with video links
                     } else {
                         Toast.makeText(context, "Cannot load photos (fetched but empty)", Toast.LENGTH_SHORT).show()
                     }

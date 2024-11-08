@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> VideoDownloadFragment()  // Tab 1
+                0 -> ImageDownloadFragment()  // Tab 1
                 1 -> VideoDownloadFragment() // Tab 2
                 else -> throw IllegalStateException("Unexpected position $position")
             }

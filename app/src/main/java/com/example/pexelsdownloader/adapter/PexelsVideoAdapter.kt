@@ -47,7 +47,6 @@ class PexelsVideoAdapter(
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
         var videoLink = videoLinks[position]
-//        holder.binding.tvDetails.text = videoLink
         holder.binding.button.setOnClickListener({
             if (!videoLink.get()!!.contains("https:") ?: true) {
                 Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
@@ -58,8 +57,6 @@ class PexelsVideoAdapter(
         })
         holder.binding.link = videoLink
         holder.binding.progress = videoProgressMap[videoLink]
-//        holder.binding.tvProgress.text = videoProgressMap[videoLink]?.toString() ?: "0"
-//        holder.binding.pbDownloadProgress.progress = (videoProgressMap[videoLink]?.toString() ?: "0").toInt()
     }
 
     override fun getItemCount(): Int {
@@ -72,7 +69,9 @@ class PexelsVideoAdapter(
 
     fun downloadAll() {
         for (i in 0..videoLinks.size - 1) {
-            downloadFileToGallery(i)
+            if (videoLinks[i].get()!!.contains("https")) {
+                downloadFileToGallery(i)
+            }
         }
     }
 
@@ -108,7 +107,6 @@ class PexelsVideoAdapter(
         request.setTitle("Downloading $fileName")
         request.setDescription("Downloading $fileName...")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName)
         request.setMimeType("video/mp4")  // Set MIME type for MP4 video file
 
@@ -120,17 +118,11 @@ class PexelsVideoAdapter(
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
                 videoProgressMap[videoLink]?.set(progress)
-//                holder.binding.tvProgress.text = videoProgressMap[videoLink]?.toString() ?: "0"
-//
-//                holder.binding.pbDownloadProgress.progress = (videoProgressMap[videoLink]?.toString() ?: "0").toInt()
-//                Toast.makeText(context, "$videoLink đã tải được $progress %", Toast.LENGTH_LONG).show()
                 Log.d("Download listener to adapter", "$videoLink đã tải được $progress %")
                 if (progress == 100L) {
-                    val file : File = File(Environment.DIRECTORY_MOVIES, fileName)
+                    val file: File = File(Environment.DIRECTORY_MOVIES, fileName)
                     videoLinks[position].set(file.absolutePath)
-
                 }
-
             }
         }
 

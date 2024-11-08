@@ -9,6 +9,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.ObservableField
+import androidx.databinding.ObservableLong
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
@@ -26,10 +28,14 @@ class PexelsImageAdapter(
     private var context: Context,
 ) : RecyclerView.Adapter<PexelsImageAdapter.PexelsViewHolder>() {
 
-    private var videoLinks: List<String> = emptyList()
+    private var photoLinks: MutableList<ObservableField<String>> = mutableListOf()
+    private val photoProgressMap: HashMap<ObservableField<String>, ObservableLong> = HashMap()
 
-    fun setVideoLinks(newVideoLinks: List<String>) {
-        videoLinks = newVideoLinks
+    fun setImageLinks(newVideoLinks: MutableList<ObservableField<String>>) {
+        photoLinks = newVideoLinks
+        for (photoLink in photoLinks) {
+            photoProgressMap.put(photoLink, ObservableLong(0L))
+        }
         notifyDataSetChanged()
     }
 
@@ -40,21 +46,33 @@ class PexelsImageAdapter(
     }
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
-        var videoLink = videoLinks[position]
-        holder.binding.tvDetails.text = videoLink
+        var photolink = photoLinks[position]
         holder.binding.button.setOnClickListener({
-            Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
-//            downloadFileWithOkHttp(videoLink)
-            downloadFileToGallery(videoLink, holder)
+            if (!photolink.get()!!.contains("https:") ?: true) {
+                Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "dang download $photolink", Toast.LENGTH_LONG).show()
+                downloadFileToGallery(position) ?: ObservableLong(0L)
+            }
         })
+        holder.binding.link = photolink
+        holder.binding.progress = photoProgressMap[photolink]
     }
 
     override fun getItemCount(): Int {
-        return videoLinks.size
+        return photoLinks.size
     }
 
     inner class PexelsViewHolder(val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
 
+    }
+
+    fun downloadAll() {
+        for (i in 0..photoLinks.size - 1) {
+            if (photoLinks[i].get()!!.contains("https")) {
+                downloadFileToGallery(i)
+            }
+        }
     }
 
     fun downloadFileWithOkHttp(url: String) {
@@ -82,14 +100,16 @@ class PexelsImageAdapter(
             }
         }
     }
-    fun downloadFileToGallery(url: String, holder: PexelsViewHolder) {
+    fun downloadFileToGallery(position: Int) {
+        val photoLink = photoLinks[position]
         var fileName = System.currentTimeMillis().toString()
-        val request = DownloadManager.Request(Uri.parse(url))
+        val request = DownloadManager.Request(Uri.parse(photoLink.get()))
         request.setTitle("Downloading $fileName")
         request.setDescription("Downloading $fileName...")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName)
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, fileName)
         request.setMimeType("image/jpeg")  // Set MIME type for MP4 video file
+
 
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
@@ -97,10 +117,12 @@ class PexelsImageAdapter(
 
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
-
-                holder.binding.pbDownloadProgress.progress = progress.toInt()
-                Toast.makeText(context, "$url đã tải được $progress %", Toast.LENGTH_LONG).show()
-                Log.d("Download listener to adapter", "$url đã tải được $progress %")
+                photoProgressMap[photoLink]?.set(progress)
+                Log.d("Download listener to adapter", "$photoLink đã tải được $progress %")
+                if (progress == 100L) {
+                    val file: File = File(Environment.DIRECTORY_PICTURES, fileName)
+                    photoLinks[position].set(file.absolutePath)
+                }
             }
         }
 
