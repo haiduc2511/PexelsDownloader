@@ -31,7 +31,7 @@ class DownloadObserver(
                 Log.d("DownloadObserver", "Download progress: $progress%")
 
                 // Optional: Show progress as a Toast (for demo purposes)
-                Toast.makeText(context, "Download progress: $progress%", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(context, "Download progress: $progress%", Toast.LENGTH_SHORT).show()
                 downloadProgressListener.onProgressFetch(progress);
             }
         }

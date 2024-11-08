@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.ObservableField
 import androidx.databinding.ObservableLong
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
@@ -27,10 +28,10 @@ class PexelsVideoAdapter(
     private var context: Context,
 ) : RecyclerView.Adapter<PexelsVideoAdapter.PexelsViewHolder>() {
 
-    private var videoLinks: List<String> = emptyList()
-    private val videoProgressMap: HashMap<String, ObservableLong> = HashMap()
+    private var videoLinks: MutableList<ObservableField<String>> = mutableListOf()
+    private val videoProgressMap: HashMap<ObservableField<String>, ObservableLong> = HashMap()
 
-    fun setVideoLinks(newVideoLinks: List<String>) {
+    fun setVideoLinks(newVideoLinks: MutableList<ObservableField<String>>) {
         videoLinks = newVideoLinks
         for (videoLink in videoLinks) {
             videoProgressMap.put(videoLink, ObservableLong(0L))
@@ -46,11 +47,14 @@ class PexelsVideoAdapter(
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
         var videoLink = videoLinks[position]
-        holder.binding.tvDetails.text = videoLink
+//        holder.binding.tvDetails.text = videoLink
         holder.binding.button.setOnClickListener({
-            Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
-//            downloadFileWithOkHttp(videoLink)
-            downloadFileToGallery(videoLink, holder) ?: ObservableLong(0L)
+            if (!videoLink.get()!!.contains("https:") ?: true) {
+                Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
+                downloadFileToGallery(position) ?: ObservableLong(0L)
+            }
         })
         holder.binding.link = videoLink
         holder.binding.progress = videoProgressMap[videoLink]
@@ -64,6 +68,12 @@ class PexelsVideoAdapter(
 
     inner class PexelsViewHolder(val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
 
+    }
+
+    fun downloadAll() {
+        for (i in 0..videoLinks.size) {
+            downloadFileToGallery(i)
+        }
     }
 
     fun downloadFileWithOkHttp(url: String) {
@@ -91,14 +101,17 @@ class PexelsVideoAdapter(
             }
         }
     }
-    fun downloadFileToGallery(videoLink: String, holder: PexelsViewHolder) {
+    fun downloadFileToGallery(position: Int) {
+        val videoLink = videoLinks[position]
         var fileName = System.currentTimeMillis().toString()
-        val request = DownloadManager.Request(Uri.parse(videoLink))
+        val request = DownloadManager.Request(Uri.parse(videoLink.get()))
         request.setTitle("Downloading $fileName")
         request.setDescription("Downloading $fileName...")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName)
         request.setMimeType("video/mp4")  // Set MIME type for MP4 video file
+
 
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
@@ -110,8 +123,14 @@ class PexelsVideoAdapter(
 //                holder.binding.tvProgress.text = videoProgressMap[videoLink]?.toString() ?: "0"
 //
 //                holder.binding.pbDownloadProgress.progress = (videoProgressMap[videoLink]?.toString() ?: "0").toInt()
-                Toast.makeText(context, "$videoLink đã tải được $progress %", Toast.LENGTH_LONG).show()
+//                Toast.makeText(context, "$videoLink đã tải được $progress %", Toast.LENGTH_LONG).show()
                 Log.d("Download listener to adapter", "$videoLink đã tải được $progress %")
+                if (progress == 100L) {
+                    val file : File = File(Environment.DIRECTORY_MOVIES, fileName)
+                    videoLinks[position].set(file.absolutePath)
+
+                }
+
             }
         }
 

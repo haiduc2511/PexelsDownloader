@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pexelsdownloader.model.PexelsEntity
 import com.example.pexelsdownloader.repository.PexelsRepository
@@ -58,13 +59,13 @@ class VideoDownloadFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null) {
                     val videos = response.body()?.videos
                     if (videos != null) {
-                        val videoLinks = mutableListOf<String>()
+                        val videoLinks = mutableListOf<ObservableField<String>>()
                         for (video in videos) {
                             val videoFiles = video.videoFiles
                             for (videoFile in videoFiles) {
                                 val videoFileLink = videoFile.link ?: ""
                                 if (videoFile.link!!.contains("720")) {
-                                    videoLinks.add(videoFileLink)
+                                    videoLinks.add(ObservableField(videoFileLink))
                                     Log.d("Link url", videoFileLink)
                                     break
                                 }

@@ -98,7 +98,6 @@ class PexelsImageAdapter(
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
 
-                holder.binding.tvProgress.text = "$progress %"
                 holder.binding.pbDownloadProgress.progress = progress.toInt()
                 Toast.makeText(context, "$url đã tải được $progress %", Toast.LENGTH_LONG).show()
                 Log.d("Download listener to adapter", "$url đã tải được $progress %")
