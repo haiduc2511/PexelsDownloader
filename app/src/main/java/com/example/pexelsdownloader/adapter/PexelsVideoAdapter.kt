@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.ObservableLong
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
@@ -27,10 +28,13 @@ class PexelsVideoAdapter(
 ) : RecyclerView.Adapter<PexelsVideoAdapter.PexelsViewHolder>() {
 
     private var videoLinks: List<String> = emptyList()
-    private var videoProgressMap: Map<String, Int> = HashMap()
+    private val videoProgressMap: HashMap<String, ObservableLong> = HashMap()
 
     fun setVideoLinks(newVideoLinks: List<String>) {
         videoLinks = newVideoLinks
+        for (videoLink in videoLinks) {
+            videoProgressMap.put(videoLink, ObservableLong(0L))
+        }
         notifyDataSetChanged()
     }
 
@@ -46,8 +50,12 @@ class PexelsVideoAdapter(
         holder.binding.button.setOnClickListener({
             Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
 //            downloadFileWithOkHttp(videoLink)
-            downloadFileToGallery(videoLink, holder)
+            downloadFileToGallery(videoLink, holder) ?: ObservableLong(0L)
         })
+        holder.binding.link = videoLink
+        holder.binding.progress = videoProgressMap[videoLink]
+//        holder.binding.tvProgress.text = videoProgressMap[videoLink]?.toString() ?: "0"
+//        holder.binding.pbDownloadProgress.progress = (videoProgressMap[videoLink]?.toString() ?: "0").toInt()
     }
 
     override fun getItemCount(): Int {
@@ -83,9 +91,9 @@ class PexelsVideoAdapter(
             }
         }
     }
-    fun downloadFileToGallery(url: String, holder: PexelsViewHolder) {
+    fun downloadFileToGallery(videoLink: String, holder: PexelsViewHolder) {
         var fileName = System.currentTimeMillis().toString()
-        val request = DownloadManager.Request(Uri.parse(url))
+        val request = DownloadManager.Request(Uri.parse(videoLink))
         request.setTitle("Downloading $fileName")
         request.setDescription("Downloading $fileName...")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -98,12 +106,12 @@ class PexelsVideoAdapter(
 
         var downloadProgressListener = object : DownloadProgressListener {
             override fun onProgressFetch(progress: Long) {
-                videoProgressMap
-
-                holder.binding.tvProgress.text = "$progress %"
-                holder.binding.pbDownloadProgress.progress = progress.toInt()
-                Toast.makeText(context, "$url đã tải được $progress %", Toast.LENGTH_LONG).show()
-                Log.d("Download listener to adapter", "$url đã tải được $progress %")
+                videoProgressMap[videoLink]?.set(progress)
+//                holder.binding.tvProgress.text = videoProgressMap[videoLink]?.toString() ?: "0"
+//
+//                holder.binding.pbDownloadProgress.progress = (videoProgressMap[videoLink]?.toString() ?: "0").toInt()
+                Toast.makeText(context, "$videoLink đã tải được $progress %", Toast.LENGTH_LONG).show()
+                Log.d("Download listener to adapter", "$videoLink đã tải được $progress %")
             }
         }
 
