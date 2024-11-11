@@ -21,6 +21,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.BufferedInputStream
@@ -145,8 +146,13 @@ class PexelsVideoAdapter(
 //            }
 //        }
 //    }
-fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
+    val maxConcurrentDownloads = 1
+    val downloadSemaphore = Semaphore(maxConcurrentDownloads)
+
+    fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
+        downloadSemaphore.acquire()
+
         try {
             val videoLink = videoLinks[position]
             val url = URL(videoLink.get())
@@ -174,8 +180,11 @@ fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: Str
             }
             connection.disconnect()
         } catch (e: Exception) {
-            progressCallback(0)
             e.printStackTrace()
+        } finally {
+            // Release the permit when done
+            progressCallback(0)
+            downloadSemaphore.release()
         }
     }
 }

@@ -21,6 +21,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.BufferedInputStream
@@ -165,8 +166,13 @@ class PexelsImageAdapter(
             }
         }
     }
+
+    val maxConcurrentDownloads = 1
+    val downloadSemaphore = Semaphore(maxConcurrentDownloads)
+
     fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
+            downloadSemaphore.acquire()
             try {
                 val photoLink = photoLinks[position]
                 val url = URL(photoLink.get())
@@ -194,8 +200,10 @@ class PexelsImageAdapter(
                 }
                 connection.disconnect()
             } catch (e: Exception) {
-                progressCallback(0)
                 e.printStackTrace()
+            } finally {
+                progressCallback(0)
+                downloadSemaphore.release()
             }
         }
     }

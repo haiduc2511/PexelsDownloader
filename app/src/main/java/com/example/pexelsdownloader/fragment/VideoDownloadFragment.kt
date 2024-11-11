@@ -67,7 +67,7 @@ class VideoDownloadFragment : Fragment() {
                             val videoFiles = video.videoFiles
                             for (videoFile in videoFiles) {
                                 val videoFileLink = videoFile.link ?: ""
-                                if (videoFile.link!!.contains("360")) {
+                                if (videoFile.link!!.contains("720")) {
                                     videoLinks.add(ObservableField(videoFileLink))
                                     Log.d("Link url", videoFileLink)
                                     break
