@@ -15,14 +15,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.URL
+import java.util.Queue
+import javax.net.ssl.HttpsURLConnection
 
 class PexelsImageAdapter(
     private var context: Context,
@@ -46,17 +53,32 @@ class PexelsImageAdapter(
     }
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
-        var photolink = photoLinks[position]
+        var photoLink = photoLinks[position]
         holder.binding.button.setOnClickListener({
-            if (!photolink.get()!!.contains("https:") ?: true) {
+            if (!photoLink.get()!!.contains("https:") ?: true) {
                 Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(context, "dang download $photolink", Toast.LENGTH_LONG).show()
-                downloadFileToGallery(position) ?: ObservableLong(0L)
+                Toast.makeText(context, "dang download $photoLink", Toast.LENGTH_LONG).show()
+//                downloadFileToGallery(position) ?: ObservableLong(0L)
+                val fileName = System.currentTimeMillis().toString()
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
+
+                downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) { progress ->
+                    if (photoProgressMap[photoLink]!!.get() != progress) {
+                        photoProgressMap[photoLink]!!.set(progress)
+                    }
+
+                    Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
+                    if (progress == 100L) {
+                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.mp4")
+                        Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                    }
+                }
+
             }
         })
-        holder.binding.link = photolink
-        holder.binding.progress = photoProgressMap[photolink]
+        holder.binding.link = photoLink
+        holder.binding.progress = photoProgressMap[photoLink]
     }
 
     override fun getItemCount(): Int {
@@ -68,12 +90,55 @@ class PexelsImageAdapter(
     }
 
     fun downloadAll() {
+        Toast.makeText(context, "Bắt đầu download all", Toast.LENGTH_LONG).show()
         for (i in 0..photoLinks.size - 1) {
             if (photoLinks[i].get()!!.contains("https")) {
-                downloadFileToGallery(i)
+                val position = i
+                var photoLink = photoLinks[position]
+                val fileName = System.currentTimeMillis().toString()
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
+
+                downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) { progress ->
+                    if (photoProgressMap[photoLink]!!.get() != progress) {
+                        photoProgressMap[photoLink]!!.set(progress)
+                    }
+
+                    Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
+                    if (progress == 100L) {
+                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.mp4")
+                        Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                    }
+                }
             }
         }
     }
+//
+//    fun downloadAll(items: MutableList<ObservableField<String>>) {
+//        Observable.create<Int> { emitter ->
+//            for (i in 0..photoLinks.size - 1) {
+//                if (photoLinks[i].get() != null) {
+//                    if (photoLinks[i].get()!!.contains("https")) {
+//                        emitter.onNext(i)
+//                    }
+//
+//                }
+//
+//            }
+//            emitter.onComplete()
+//        }
+//            .flatMap(
+//                { i -> downloadFileToGallery(i) },
+//                4 // Giới hạn số lượng tải xuống đồng thời là 4
+//            )
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result -> println(result) },
+//                { error -> println("Error: ${error.message}") },
+//                { println("All downloads completed.") }
+//            )
+//    }
+
 
     fun downloadFileWithOkHttp(url: String) {
         // Launch the download operation on a background thread
@@ -100,6 +165,41 @@ class PexelsImageAdapter(
             }
         }
     }
+    fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val photoLink = photoLinks[position]
+                val url = URL(photoLink.get())
+                val connection = url.openConnection() as HttpsURLConnection
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 10000
+                connection.readTimeout = 10000
+
+                val totalSize = connection.contentLength
+                var downloadedSize = 0
+
+
+                BufferedInputStream(connection.inputStream).use { inputStream ->
+                    FileOutputStream(outputFilePath).use { outputStream ->
+                        val buffer = ByteArray(1024)
+                        var bytesRead: Int
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
+                            downloadedSize += bytesRead
+                            val progress = (downloadedSize * 100L) / totalSize
+                            progressCallback(progress)
+                        }
+                        outputStream.flush()
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                progressCallback(0)
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun downloadFileToGallery(position: Int) {
         val photoLink = photoLinks[position]
         var fileName = System.currentTimeMillis().toString()

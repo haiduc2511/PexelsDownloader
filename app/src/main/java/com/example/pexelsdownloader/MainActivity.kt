@@ -22,6 +22,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewPager: ViewPager2
     private lateinit var tabLayout: TabLayout
+    private lateinit var imageDownloadFragment: ImageDownloadFragment
+    private lateinit var videoDownloadFragment: VideoDownloadFragment
+    private var currentFragmentNumber: Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +35,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initTablayoutViewPager()
+        initFabDownloadAll()
         // Set up RecyclerView
+    }
+    fun initFabDownloadAll() {
+        binding.fabDownloadAll.setOnClickListener({
+            if (currentFragmentNumber == 0) {
+                imageDownloadFragment.downloadAll()
+            } else if (currentFragmentNumber == 1) {
+                videoDownloadFragment.downloadAll()
+            }
+        })
     }
     fun initTablayoutViewPager() {
         viewPager = binding.viewPager
@@ -44,6 +57,14 @@ class MainActivity : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position -> {}
             tab.text = if (position == 0) "Image" else "Video"
         }.attach()
+
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                currentFragmentNumber = position
+                // Bạn có thể sử dụng biến currentFragment tại đây để thực hiện các hành động khác
+            }
+        })
 
     }
 
@@ -71,8 +92,14 @@ class MainActivity : AppCompatActivity() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> ImageDownloadFragment()  // Tab 1
-                1 -> VideoDownloadFragment() // Tab 2
+                0 -> {
+                    imageDownloadFragment = ImageDownloadFragment()
+                    return imageDownloadFragment
+                } // Tab 1
+                1 -> {
+                    videoDownloadFragment = VideoDownloadFragment()
+                    return videoDownloadFragment
+                }  // Tab 2
                 else -> throw IllegalStateException("Unexpected position $position")
             }
         }

@@ -1,5 +1,6 @@
 package com.example.pexelsdownloader.adapter
 
+import android.animation.ObjectAnimator
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
@@ -9,20 +10,25 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.Observable
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableLong
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 class PexelsVideoAdapter(
     private var context: Context,
@@ -47,16 +53,42 @@ class PexelsVideoAdapter(
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
         var videoLink = videoLinks[position]
-        holder.binding.button.setOnClickListener({
-            if (!videoLink.get()!!.contains("https:") ?: true) {
+        holder.binding.button.setOnClickListener {
+            if (!videoLink.get()!!.contains("https://videos.pexels.com/") ?: true) {
                 Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(context, "dang download $videoLink", Toast.LENGTH_LONG).show()
-                downloadFileToGallery(position) ?: ObservableLong(0L)
+                val fileName = System.currentTimeMillis().toString()
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
+
+                downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) { progress ->
+                    if (videoProgressMap[videoLink]!!.get() != progress) {
+                        videoProgressMap[videoLink]!!.set(progress)
+                    }
+
+                    Log.d("Download in adapter", "${videoLink.get()} đã tải được $progress %")
+                    if (progress == 100L) {
+                        videoLinks[position].set("/storage/emulated/0/Download/$fileName.mp4")
+                        Log.d("Download in adapter", "${videoLink.get()} đã hoàn thành")
+                    }
+                }
+//                downloadFileToGallery(position) ?: ObservableLong(0L)
             }
-        })
+        }
         holder.binding.link = videoLink
+//        videoProgressMap[videoLink]!!.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+//            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+//                val progress = videoProgressMap[videoLink]!!.get().toInt()
+//                animateProgress(holder.binding.pbDownloadProgress, progress)
+//            }
+//        })
+
         holder.binding.progress = videoProgressMap[videoLink]
+    }
+    fun animateProgress(progressIndicator: LinearProgressIndicator, progress: Int) {
+        val animator = ObjectAnimator.ofInt(progressIndicator, "progress", progressIndicator.progress, progress)
+        animator.duration = 500 // Adjust the duration for smoothness
+        animator.start()
     }
 
     override fun getItemCount(): Int {
@@ -68,38 +100,85 @@ class PexelsVideoAdapter(
     }
 
     fun downloadAll() {
+        Toast.makeText(context, "Bắt đầu download all", Toast.LENGTH_LONG).show()
         for (i in 0..videoLinks.size - 1) {
             if (videoLinks[i].get()!!.contains("https")) {
-                downloadFileToGallery(i)
-            }
-        }
-    }
+                val position = i
+                var videoLink = videoLinks[position]
+                val fileName = System.currentTimeMillis().toString()
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
 
-    fun downloadFileWithOkHttp(url: String) {
-        // Launch the download operation on a background thread
-        val destinationPath = "${context.getExternalFilesDir(null)}/downloaded_file.zip"
-        CoroutineScope(Dispatchers.IO).launch {
-            val client = OkHttpClient()
-            val request = Request.Builder().url(url).build()
-
-            try {
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
-
-                    response.body()?.let { responseBody ->
-                        responseBody.byteStream().use { inputStream ->
-                            val file = File(destinationPath)
-                            FileOutputStream(file).use { outputStream ->
-                                inputStream.copyTo(outputStream)
-                            }
-                        }
-                    } ?: throw IOException("Response body is null")
+                downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) {progress ->
+                    videoProgressMap[videoLink]?.set(progress)
+                    Log.d("Download listener to adapter", "$videoLink đã tải được $progress %")
+                    if (progress == 100L) {
+                        videoLinks[position].set("$outputFilePath")
+                    }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace() // Handle the exception appropriately in a production app
+
             }
         }
     }
+
+//    fun downloadFileWithOkHttp(url: String) {
+//        // Launch the download operation on a background thread
+//        val destinationPath = "${context.getExternalFilesDir(null)}/downloaded_file.zip"
+//        CoroutineScope(Dispatchers.IO).launch {
+//            val client = OkHttpClient()
+//            val request = Request.Builder().url(url).build()
+//
+//            try {
+//                client.newCall(request).execute().use { response ->
+//                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+//
+//                    response.body()?.let { responseBody ->
+//                        responseBody.byteStream().use { inputStream ->
+//                            val file = File(destinationPath)
+//                            FileOutputStream(file).use { outputStream ->
+//                                inputStream.copyTo(outputStream)
+//                            }
+//                        }
+//                    } ?: throw IOException("Response body is null")
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace() // Handle the exception appropriately in a production app
+//            }
+//        }
+//    }
+fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val videoLink = videoLinks[position]
+            val url = URL(videoLink.get())
+            val connection = url.openConnection() as HttpsURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+
+            val totalSize = connection.contentLength
+            var downloadedSize = 0
+
+
+            BufferedInputStream(connection.inputStream).use { inputStream ->
+                FileOutputStream(outputFilePath).use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var bytesRead: Int
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                        downloadedSize += bytesRead
+                        val progress = (downloadedSize * 100L) / totalSize
+                        progressCallback(progress)
+                    }
+                    outputStream.flush()
+                }
+            }
+            connection.disconnect()
+        } catch (e: Exception) {
+            progressCallback(0)
+            e.printStackTrace()
+        }
+    }
+}
     fun downloadFileToGallery(position: Int) {
         val videoLink = videoLinks[position]
         var fileName = System.currentTimeMillis().toString()

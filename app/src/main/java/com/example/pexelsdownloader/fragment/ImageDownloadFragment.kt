@@ -38,14 +38,12 @@ class ImageDownloadFragment : Fragment() {
         binding = FragmentImageDownloadBinding.inflate(layoutInflater)
         context = requireContext()
         initRecyclerView()
-        initFabDownloadAll()
         return binding.root
     }
-    fun initFabDownloadAll() {
-        binding.fabDownloadAll.setOnClickListener({
-            adapter.downloadAll()
-        })
+    public fun downloadAll() {
+        adapter.downloadAll()
     }
+
 
     fun initRecyclerView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

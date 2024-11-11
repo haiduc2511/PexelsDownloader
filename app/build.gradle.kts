@@ -59,6 +59,7 @@ dependencies {
     implementation ("com.google.android.material:material:1.9.0") // TabLayout
     implementation ("androidx.viewpager2:viewpager2:1.0.0") // ViewPager2
 
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

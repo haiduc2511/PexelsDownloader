@@ -38,13 +38,10 @@ class VideoDownloadFragment : Fragment() {
         binding = FragmentVideoDownloadBinding.inflate(layoutInflater)
         context = requireContext()
         initRecyclerView()
-        initFabDownloadAll()
         return binding.root
     }
-    fun initFabDownloadAll() {
-        binding.fabDownloadAll.setOnClickListener({
-            adapter.downloadAll()
-        })
+    public fun downloadAll() {
+        adapter.downloadAll()
     }
     fun initRecyclerView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
@@ -70,7 +67,7 @@ class VideoDownloadFragment : Fragment() {
                             val videoFiles = video.videoFiles
                             for (videoFile in videoFiles) {
                                 val videoFileLink = videoFile.link ?: ""
-                                if (videoFile.link!!.contains("720")) {
+                                if (videoFile.link!!.contains("360")) {
                                     videoLinks.add(ObservableField(videoFileLink))
                                     Log.d("Link url", videoFileLink)
                                     break
