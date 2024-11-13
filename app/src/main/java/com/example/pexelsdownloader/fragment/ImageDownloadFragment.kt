@@ -70,6 +70,10 @@ class ImageDownloadFragment : Fragment() {
         adapter.setPhotosLinks(photoLinks)
     }
 
+    fun clearAdapter() {
+        adapter.setPhotosLinks(mutableListOf())
+    }
+
     private fun getSearchPhotos(page: Int) {
         pexelsRepository.getImageSearch("home", page)?.enqueue(object : Callback<PexelsEntity?> {
             override fun onResponse(call: Call<PexelsEntity?>, response: Response<PexelsEntity?>) {

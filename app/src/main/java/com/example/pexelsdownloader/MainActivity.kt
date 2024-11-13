@@ -65,10 +65,14 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_clear -> {
                 // Handle settings action
+                clearAdapter()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    private fun clearAdapter() {
+        imageDownloadFragment.clearAdapter()
     }
     private fun openFilePicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
