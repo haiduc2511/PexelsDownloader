@@ -20,51 +20,65 @@ import com.google.android.material.tabs.TabLayoutMediator
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var viewPager: ViewPager2
-    private lateinit var tabLayout: TabLayout
     private lateinit var imageDownloadFragment: ImageDownloadFragment
     private lateinit var videoDownloadFragment: VideoDownloadFragment
     private var currentFragmentNumber: Int = 0
+    private var isTablet : Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
-
+        isTablet = resources.configuration.smallestScreenWidthDp >= 600
         // Initialize ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        initTablayoutViewPager()
+        if (isTablet) {
+            initTablayoutAndBothFragments()
+        } else {
+            initTablayoutViewPager()
+        }
         initFabDownloadAll()
         // Set up RecyclerView
     }
     fun initFabDownloadAll() {
-        binding.fabDownloadAll.setOnClickListener({
-            if (currentFragmentNumber == 0) {
+        binding.fabDownloadAll.setOnClickListener {
+            if (!isTablet) {
+                // Phone mode
+                if (currentFragmentNumber == 0) {
+                    imageDownloadFragment.downloadAll()
+                } else {
+                    videoDownloadFragment.downloadAll()
+                }
+            } else {
+                // Tablet mode
                 imageDownloadFragment.downloadAll()
-            } else if (currentFragmentNumber == 1) {
                 videoDownloadFragment.downloadAll()
             }
-        })
+        }
     }
-    fun initTablayoutViewPager() {
-        viewPager = binding.viewPager
-        tabLayout = binding.tabLayout
-        viewPager.adapter = ViewPagerAdapter(this)
+    fun initTablayoutAndBothFragments() {
+        imageDownloadFragment = supportFragmentManager.findFragmentById(R.id.imageDownloadFragment) as ImageDownloadFragment
+        videoDownloadFragment = supportFragmentManager.findFragmentById(R.id.videoDownloadFragment) as VideoDownloadFragment
 
+    }
+
+    fun initTablayoutViewPager() {
+        var tabLayout: TabLayout = binding.tabLayout!!
+        var viewPager: ViewPager2 = binding.viewPager!!
+        viewPager.adapter = ViewPagerAdapter(this)
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                currentFragmentNumber = position
+            }
+        })
 
         // Kết nối TabLayout với ViewPager2
         TabLayoutMediator(tabLayout, viewPager) { tab, position -> {}
             tab.text = if (position == 0) "Image" else "Video"
         }.attach()
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                currentFragmentNumber = position
-                // Bạn có thể sử dụng biến currentFragment tại đây để thực hiện các hành động khác
-            }
-        })
 
     }
 

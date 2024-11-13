@@ -62,7 +62,7 @@ class PexelsImageAdapter(
                 Toast.makeText(context, "dang download $photoLink", Toast.LENGTH_LONG).show()
 //                downloadFileToGallery(position) ?: ObservableLong(0L)
                 val fileName = System.currentTimeMillis().toString()
-                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.jpeg"
 
                 downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) { progress ->
                     if (photoProgressMap[photoLink]!!.get() != progress) {
@@ -97,7 +97,7 @@ class PexelsImageAdapter(
                 val position = i
                 var photoLink = photoLinks[position]
                 val fileName = System.currentTimeMillis().toString()
-                val outputFilePath = "/storage/emulated/0/Download/$fileName.mp4"
+                val outputFilePath = "/storage/emulated/0/Download/$fileName.jpeg"
 
                 downloadFileToGalleryByHttpsUrlConnection(position, outputFilePath) { progress ->
                     if (photoProgressMap[photoLink]!!.get() != progress) {
@@ -106,7 +106,7 @@ class PexelsImageAdapter(
 
                     Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
                     if (progress == 100L) {
-                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.mp4")
+                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.jpeg")
                         Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
                     }
                 }
@@ -167,7 +167,7 @@ class PexelsImageAdapter(
         }
     }
 
-    val maxConcurrentDownloads = 1
+    val maxConcurrentDownloads = 2
     val downloadSemaphore = Semaphore(maxConcurrentDownloads)
 
     fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {

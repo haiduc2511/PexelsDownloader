@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
 import com.example.pexelsdownloader.databinding.ItemPhotoBinding
+import com.example.pexelsdownloader.databinding.ItemVideoBinding
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class PexelsVideoAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PexelsViewHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(parent.context)
-        val binding = ItemPhotoBinding.inflate(layoutInflater, parent, false)
+        val binding = ItemVideoBinding.inflate(layoutInflater, parent, false)
         return PexelsViewHolder(binding)
     }
 
@@ -77,13 +78,6 @@ class PexelsVideoAdapter(
             }
         }
         holder.binding.link = videoLink
-//        videoProgressMap[videoLink]!!.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
-//            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-//                val progress = videoProgressMap[videoLink]!!.get().toInt()
-//                animateProgress(holder.binding.pbDownloadProgress, progress)
-//            }
-//        })
-
         holder.binding.progress = videoProgressMap[videoLink]
     }
     fun animateProgress(progressIndicator: LinearProgressIndicator, progress: Int) {
@@ -96,7 +90,7 @@ class PexelsVideoAdapter(
         return videoLinks.size
     }
 
-    inner class PexelsViewHolder(val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class PexelsViewHolder(val binding: ItemVideoBinding) : RecyclerView.ViewHolder(binding.root) {
 
     }
 
@@ -121,32 +115,7 @@ class PexelsVideoAdapter(
         }
     }
 
-//    fun downloadFileWithOkHttp(url: String) {
-//        // Launch the download operation on a background thread
-//        val destinationPath = "${context.getExternalFilesDir(null)}/downloaded_file.zip"
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val client = OkHttpClient()
-//            val request = Request.Builder().url(url).build()
-//
-//            try {
-//                client.newCall(request).execute().use { response ->
-//                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
-//
-//                    response.body()?.let { responseBody ->
-//                        responseBody.byteStream().use { inputStream ->
-//                            val file = File(destinationPath)
-//                            FileOutputStream(file).use { outputStream ->
-//                                inputStream.copyTo(outputStream)
-//                            }
-//                        }
-//                    } ?: throw IOException("Response body is null")
-//                }
-//            } catch (e: Exception) {
-//                e.printStackTrace() // Handle the exception appropriately in a production app
-//            }
-//        }
-//    }
-    val maxConcurrentDownloads = 1
+    val maxConcurrentDownloads = 2
     val downloadSemaphore = Semaphore(maxConcurrentDownloads)
 
     fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
