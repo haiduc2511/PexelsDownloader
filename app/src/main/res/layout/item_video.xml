@@ -26,7 +26,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="11"
-                android:layout_margin="40dp"
                 app:layout_constraintBottom_toTopOf="@+id/pb_download_progress"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

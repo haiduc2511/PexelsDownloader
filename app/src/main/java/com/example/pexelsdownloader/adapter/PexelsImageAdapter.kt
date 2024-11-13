@@ -12,12 +12,12 @@ import android.widget.Toast
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableLong
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.pexelsdownloader.R
+import com.example.pexelsdownloader.databinding.ItemPhotoBinding
 import com.example.pexelsdownloader.utils.DownloadObserver
 import com.example.pexelsdownloader.utils.DownloadProgressListener
-import com.example.pexelsdownloader.databinding.ItemPhotoBinding
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +29,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
-import java.util.Queue
 import javax.net.ssl.HttpsURLConnection
 
 class PexelsImageAdapter(
@@ -38,6 +37,8 @@ class PexelsImageAdapter(
 
     private var photoLinks: MutableList<ObservableField<String>> = mutableListOf()
     private val photoProgressMap: HashMap<ObservableField<String>, ObservableLong> = HashMap()
+    private val imageModelsDownloaded: HashSet<String> = HashSet<String>() //Forgot to add ImageModelsShared
+
 
     fun setImageLinks(newVideoLinks: MutableList<ObservableField<String>>) {
         photoLinks = newVideoLinks
@@ -55,11 +56,12 @@ class PexelsImageAdapter(
 
     override fun onBindViewHolder(holder: PexelsViewHolder, position: Int) {
         var photoLink = photoLinks[position]
-        holder.binding.button.setOnClickListener({
+        holder.binding.ibDownload.setOnClickListener {
             if (!photoLink.get()!!.contains("https:") ?: true) {
                 Toast.makeText(context, "You've already downloaded this", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(context, "dang download $photoLink", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "dang download ${photoLink.get()}", Toast.LENGTH_LONG)
+                    .show()
 //                downloadFileToGallery(position) ?: ObservableLong(0L)
                 val fileName = System.currentTimeMillis().toString()
                 val outputFilePath = "/storage/emulated/0/Download/$fileName.jpeg"
@@ -71,15 +73,32 @@ class PexelsImageAdapter(
 
                     Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
                     if (progress == 100L) {
-                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.mp4")
+                        holder.binding.ibDownload.setImageResource(R.drawable.ic_download_done)
+                        imageModelsDownloaded.add(photoLink.get().toString())
+                        Toast.makeText(
+                            context,
+                            "Đã tải về storage/emulated/0/Download/$fileName.mp4",
+                            Toast.LENGTH_LONG
+                        ).show()
                         Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
                     }
                 }
 
             }
-        })
+        }
         holder.binding.link = photoLink
         holder.binding.progress = photoProgressMap[photoLink]
+
+
+        Glide.with(context).load(photoLink.get() )
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(holder.binding.imageView)
+
+        if (imageModelsDownloaded.contains(photoLink.get().toString())) {
+            holder.binding.ibDownload.setImageResource(R.drawable.ic_download_done)
+        } else {
+            holder.binding.ibDownload.setImageResource(R.drawable.ic_download)
+        }
     }
 
     override fun getItemCount(): Int {

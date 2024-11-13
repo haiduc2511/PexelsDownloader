@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.pexelsdownloader.adapter.PexelsImageAdapter
 import com.example.pexelsdownloader.model.PexelsEntity
 import com.example.pexelsdownloader.repository.PexelsRepository
@@ -46,7 +47,7 @@ class ImageDownloadFragment : Fragment() {
 
 
     fun initRecyclerView() {
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.layoutManager = StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
         adapter = PexelsImageAdapter(context)
         binding.recyclerView.adapter = adapter
 
@@ -67,7 +68,7 @@ class ImageDownloadFragment : Fragment() {
                         val photoLinks = mutableListOf<ObservableField<String>>()
                         for (photo in photos) {
                             val src = photo.src
-                            val srcLink :String = src?.large2x ?: ""
+                            val srcLink :String = src?.large ?: ""
                             photoLinks.add(ObservableField(srcLink))
                             Log.d("Link url photo", srcLink)
 
