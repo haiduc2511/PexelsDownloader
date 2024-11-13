@@ -16,6 +16,7 @@ import com.example.pexelsdownloader.model.PexelsEntity
 import com.example.pexelsdownloader.repository.PexelsRepository
 import com.example.pexelsdownloader.adapter.PexelsVideoAdapter
 import com.example.pexelsdownloader.databinding.FragmentImageDownloadBinding
+import com.example.pexelsdownloader.model.Photo
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -59,6 +60,16 @@ class ImageDownloadFragment : Fragment() {
 
     }
 
+    fun setPhotos(photos: List<String>) {
+        val photoLinks = mutableListOf<ObservableField<String>>()
+
+        for (photo in photos) {
+            photoLinks.add(ObservableField(photo))
+        }
+
+        adapter.setPhotosLinks(photoLinks)
+    }
+
     private fun getSearchPhotos(page: Int) {
         pexelsRepository.getImageSearch("home", page)?.enqueue(object : Callback<PexelsEntity?> {
             override fun onResponse(call: Call<PexelsEntity?>, response: Response<PexelsEntity?>) {
@@ -74,7 +85,7 @@ class ImageDownloadFragment : Fragment() {
 
                         }
                         Toast.makeText(context, "${photos.size}", Toast.LENGTH_SHORT).show()
-                        adapter.setImageLinks(photoLinks) // Update adapter with video links
+                        adapter.setPhotosLinks(photoLinks) // Update adapter with video links
                     } else {
                         Toast.makeText(context, "Cannot load photos (fetched but empty)", Toast.LENGTH_SHORT).show()
                     }

@@ -1,8 +1,13 @@
 package com.example.pexelsdownloader
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -15,6 +20,8 @@ import com.example.pexelsdownloader.fragment.VideoDownloadFragment
 import com.example.pexelsdownloader.model.VideoFile
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import org.json.JSONException
+import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
+
         isTablet = resources.configuration.smallestScreenWidthDp >= 600
         // Initialize ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -39,8 +47,80 @@ class MainActivity : AppCompatActivity() {
             initTablayoutViewPager()
         }
         initFabDownloadAll()
-        // Set up RecyclerView
+        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
     }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_search -> {
+                openFilePicker()
+                // Handle search action
+                true
+            }
+            R.id.action_clear -> {
+                // Handle settings action
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    private fun openFilePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            type = "application/json"  // Limit to JSON files
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
+        startActivityForResult(intent, REQUEST_CODE_PICK_JSON)
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_PICK_JSON && resultCode == RESULT_OK) {
+            data?.data?.let { uri ->
+                importJsonFile(uri)
+            }
+        }
+    }
+    private fun importJsonFile(uri: Uri) {
+        val contentResolver = applicationContext.contentResolver
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val jsonText = inputStream.bufferedReader().use { it.readText() }
+                // Parse the JSON text
+                processJsonData(jsonText)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Handle exceptions, such as showing a Toast message
+        }
+    }
+    private fun processJsonData(jsonText: String) {
+        try {
+            val jsonObject = JSONObject(jsonText)
+            val imagesArray = jsonObject.getJSONArray("images")
+            val imageUrls = mutableListOf<String>()
+
+            for (i in 0 until imagesArray.length()) {
+                val url = imagesArray.getString(i)
+                imageUrls.add(url)
+            }
+            imageDownloadFragment.setPhotos(imageUrls)
+            // Log or use the list of image URLs as needed
+            Log.d("ImageURLs", imageUrls.toString())
+        } catch (e: JSONException) {
+            e.printStackTrace()
+            // Handle JSON parsing error
+        }
+    }
+
+    companion object {
+        private const val REQUEST_CODE_PICK_JSON = 1001
+    }
+
     fun initFabDownloadAll() {
         binding.fabDownloadAll.setOnClickListener {
             if (!isTablet) {

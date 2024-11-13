@@ -40,8 +40,9 @@ class PexelsImageAdapter(
     private val imageModelsDownloaded: HashSet<String> = HashSet<String>() //Forgot to add ImageModelsShared
 
 
-    fun setImageLinks(newVideoLinks: MutableList<ObservableField<String>>) {
-        photoLinks = newVideoLinks
+    fun setPhotosLinks(newPhotosLinks: MutableList<ObservableField<String>>) {
+        photoProgressMap.clear()
+        photoLinks = newPhotosLinks
         for (photoLink in photoLinks) {
             photoProgressMap.put(photoLink, ObservableLong(0L))
         }
