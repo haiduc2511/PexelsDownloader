@@ -48,7 +48,7 @@ class ImageDownloadFragment : Fragment() {
 
 
     fun initRecyclerView() {
-        binding.recyclerView.layoutManager = StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
         adapter = PexelsImageAdapter(context)
         binding.recyclerView.adapter = adapter
 

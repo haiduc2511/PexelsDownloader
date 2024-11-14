@@ -74,24 +74,26 @@ class PexelsImageAdapter(
 
                     Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
                     if (progress == 100L) {
-                        holder.binding.ibDownload.setImageResource(R.drawable.ic_download_done)
-                        imageModelsDownloaded.add(photoLink.get().toString())
-                        Toast.makeText(
-                            context,
-                            "Đã tải về storage/emulated/0/Download/$fileName.mp4",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            holder.binding.ibDownload.setImageResource(R.drawable.ic_download_done)
+                            imageModelsDownloaded.add(photoLink.get().toString())
+                            Toast.makeText(
+                                context,
+                                "Đã tải về storage/emulated/0/Download/$fileName.jpeg",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                        }
                     }
                 }
-
             }
         }
         holder.binding.link = photoLink
         holder.binding.progress = photoProgressMap[photoLink]
 
 
-        Glide.with(context).load(photoLink.get() )
+        Glide.with(context).load(photoLink.get())
+            .override(300)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(holder.binding.imageView)
 
@@ -126,10 +128,18 @@ class PexelsImageAdapter(
 
                     Log.d("Download in adapter", "${photoLink.get()} đã tải được $progress %")
                     if (progress == 100L) {
-                        photoLinks[position].set("/storage/emulated/0/Download/$fileName.jpeg")
-                        Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            imageModelsDownloaded.add(photoLink.get().toString())
+                            Toast.makeText(
+                                context,
+                                "Đã tải về storage/emulated/0/Download/$fileName.jpeg",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            Log.d("Download in adapter", "${photoLink.get()} đã hoàn thành")
+                        }
                     }
                 }
+
             }
         }
     }
