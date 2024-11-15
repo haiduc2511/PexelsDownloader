@@ -10,92 +10,104 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:cardCornerRadius="10dp">
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
+            <TextureView
+                android:id="@+id/textureView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
                 android:id="@+id/ib_add_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_add"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Thêm video"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_margin="8dp" />
+                android:src="@drawable/ic_add"
+                app:layout_constraintStart_toEndOf="@+id/ib_list_video"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- New ImageButtons -->
 
             <ImageButton
                 android:id="@+id/ib_list_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_list"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Danh sách video"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                android:src="@drawable/ic_list"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- New ImageButtons -->
             <ImageButton
                 android:id="@+id/ib_play_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_play_video"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Phát video"
-                app:layout_constraintTop_toTopOf="parent"
+                android:src="@drawable/ic_play_video"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                />
 
             <ImageButton
                 android:id="@+id/ib_pause_play_toggle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_pause_video"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Tạm dừng video"
-                app:layout_constraintTop_toTopOf="parent"
+                android:src="@drawable/ic_pause_video"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ib_play_video"
-                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                />
 
             <ImageButton
                 android:id="@+id/ib_auto_replay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_auto_replay"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Tự động tua lại"
-                app:layout_constraintTop_toTopOf="parent"
+                android:src="@drawable/ic_auto_replay"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ib_pause_play_toggle"
-                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                />
 
             <ImageButton
                 android:id="@+id/ib_speed_up"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_increase_speed"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Tăng tốc độ x2"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/ib_auto_replay"
-                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                android:src="@drawable/ic_increase_speed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
             <ImageButton
                 android:id="@+id/ib_speed_down"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_decrease_speed"
+                android:layout_margin="8dp"
                 android:backgroundTint="@color/white"
                 android:contentDescription="Giảm tốc độ x2"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/ib_speed_up"
-                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
-                android:layout_margin="8dp" />
+                android:src="@drawable/ic_decrease_speed"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/ib_speed_up"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

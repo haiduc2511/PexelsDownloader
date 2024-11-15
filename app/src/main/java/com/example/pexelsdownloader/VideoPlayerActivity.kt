@@ -18,12 +18,16 @@ class VideoPlayerActivity : AppCompatActivity() {
 
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentTopLeft.id, VideoPlayerFragment()).commit()
+
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentTopRight.id, VideoPlayerFragment()).commit()
+
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentBottomLeft.id, VideoPlayerFragment()).commit()
+
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentBottomRight.id, VideoPlayerFragment()).commit()
+
 
 
 
