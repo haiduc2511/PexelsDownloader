@@ -14,87 +14,88 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <Button
-                android:id="@+id/bt_add_video"
+            <ImageButton
+                android:id="@+id/ib_add_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thêm video"
-                android:textSize="8sp"
-                android:backgroundTint="@color/black"
+                android:src="@drawable/ic_add"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Thêm video"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_margin="8dp" />
 
-            <Button
-                android:id="@+id/bt_list_video"
+            <ImageButton
+                android:id="@+id/ib_list_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Danh sách video"
-                android:textSize="8sp"
-                android:backgroundTint="@color/black"
+                android:src="@drawable/ic_list"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Danh sách video"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/bt_add_video"
-                android:layout_marginStart="8dp" />
+                app:layout_constraintStart_toEndOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
 
-            <!-- New Buttons -->
-
-            <Button
-                android:id="@+id/bt_play_video"
+            <!-- New ImageButtons -->
+            <ImageButton
+                android:id="@+id/ib_play_video"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:text="Phát video"
-                android:textSize="8sp"
-                app:layout_constraintBottom_toTopOf="@+id/bt_add_video"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/bt_speed_up"
-                app:layout_constraintVertical_bias="0.444" />
-
-            <Button
-                android:id="@+id/bt_pause_play_toggle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:text="Tạm dừng/Phát video"
-                android:textSize="8sp"
-                app:layout_constraintBottom_toTopOf="@+id/bt_list_video"
-                app:layout_constraintStart_toEndOf="@id/bt_play_video"
-                app:layout_constraintTop_toBottomOf="@+id/bt_speed_down"
-                app:layout_constraintVertical_bias="0.444" />
-
-            <Button
-                android:id="@+id/bt_auto_replay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:text="Tự động tua lại"
-                android:textSize="8sp"
-                app:layout_constraintBottom_toTopOf="@+id/bt_list_video"
-                app:layout_constraintStart_toEndOf="@+id/bt_pause_play_toggle"
-                app:layout_constraintTop_toBottomOf="@+id/bt_speed_down"
-                app:layout_constraintVertical_bias="0.487" />
-
-            <Button
-                android:id="@+id/bt_speed_up"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:text="Tăng tốc độ x2"
-                android:textSize="8sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Button
-                android:id="@+id/bt_speed_down"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:text="Giảm tốc độ x2"
-                android:textSize="8sp"
-                app:layout_constraintBottom_toTopOf="@id/bt_add_video"
-                app:layout_constraintStart_toEndOf="@id/bt_speed_up"
+                android:src="@drawable/ic_play_video"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Phát video"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.013" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
 
+            <ImageButton
+                android:id="@+id/ib_pause_play_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_pause_video"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Tạm dừng video"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ib_play_video"
+                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
+
+            <ImageButton
+                android:id="@+id/ib_auto_replay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_auto_replay"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Tự động tua lại"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ib_pause_play_toggle"
+                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
+
+            <ImageButton
+                android:id="@+id/ib_speed_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_increase_speed"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Tăng tốc độ x2"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ib_auto_replay"
+                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
+
+            <ImageButton
+                android:id="@+id/ib_speed_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_decrease_speed"
+                android:backgroundTint="@color/white"
+                android:contentDescription="Giảm tốc độ x2"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ib_speed_up"
+                app:layout_constraintBottom_toTopOf="@id/ib_add_video"
+                android:layout_margin="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
