@@ -14,7 +14,7 @@
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_video_play"
-        android:icon="@drawable/ic_play_video"
+        android:icon="@drawable/ic_go_to_video_player_activity"
         android:title="clear"
         app:showAsAction="ifRoom"/>
 </menu>

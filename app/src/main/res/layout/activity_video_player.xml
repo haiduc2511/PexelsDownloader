@@ -15,7 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline_vertical"
         app:layout_constraintBottom_toTopOf="@+id/guideline_horizontal"
-        android:layout_margin="4dp" />
+        android:layout_margin="2dp" />
 
     <!-- Top-right fragment -->
     <androidx.fragment.app.FragmentContainerView
@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/guideline_vertical"
         app:layout_constraintBottom_toTopOf="@+id/guideline_horizontal"
-        android:layout_margin="4dp" />
+        android:layout_margin="2dp" />
 
     <!-- Bottom-left fragment -->
     <androidx.fragment.app.FragmentContainerView
@@ -37,7 +37,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_margin="4dp" />
+        android:layout_margin="2dp" />
 
     <!-- Bottom-right fragment -->
     <androidx.fragment.app.FragmentContainerView
@@ -48,7 +48,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/guideline_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_margin="4dp" />
+        android:layout_margin="2dp" />
 
     <!-- Vertical guideline -->
     <androidx.constraintlayout.widget.Guideline
