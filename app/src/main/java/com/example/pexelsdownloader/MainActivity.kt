@@ -68,6 +68,11 @@ class MainActivity : AppCompatActivity() {
                 clearAdapter()
                 true
             }
+            R.id.action_video_play -> {
+                // Handle settings action
+                startActivity(Intent(this, VideoPlayerActivity::class.java))
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
