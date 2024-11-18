@@ -43,6 +43,17 @@ class VideoPlayerFragment : Fragment() {
         binding.ibAddVideo.setOnClickListener{
             selectVideo()
         }
+        binding.ibPausePlayToggle.setOnClickListener {
+            if (!isPaused) {
+                pauseVideo()
+            }
+        }
+        binding.ibPlayVideo.setOnClickListener{
+            if (isPaused) {
+                resumeVideo()
+            }
+        }
+
         binding.textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(surfaceTexture: android.graphics.SurfaceTexture, width: Int, height: Int) {
                 // Surface ready for playback
@@ -124,16 +135,40 @@ class VideoPlayerFragment : Fragment() {
         // Select the video track
         mediaExtractor.selectTrack(0)
     }
+    private var isPaused = false
+    private val pauseLock = Object()
 
     private fun startDecodingThread(startTime: Long) {
         Thread {
             var isEOS = false
             while (!isEOS) {
+                // Pause handling
+                synchronized(pauseLock) {
+                    if (isPaused) {
+                        pauseLock.wait() // Wait until the pause is lifted
+                    }
+                }
                 isEOS = processInputBuffer(isEOS)
                 processOutputBuffer(startTime)
             }
         }.start()
     }
+    private var pauseOffsetNs: Long = 0L
+    private var pauseStartNs: Long = 0L
+
+    private fun pauseVideo() {
+        isPaused = true
+        pauseStartNs = System.nanoTime() // Record pause start time
+    }
+
+    private fun resumeVideo() {
+        isPaused = false
+        pauseOffsetNs += System.nanoTime() - pauseStartNs // Add paused duration
+        synchronized(pauseLock) {
+            pauseLock.notifyAll() // Wake up the decoding thread
+        }
+    }
+
 
     private fun processInputBuffer(isEOS: Boolean): Boolean {
         if (isEOS) return true
@@ -180,10 +215,12 @@ class VideoPlayerFragment : Fragment() {
     }
 
     private fun renderFrame(bufferInfo: MediaCodec.BufferInfo, outputBufferId: Int, startTime: Long) {
-        val presentationTimeUs = bufferInfo.presentationTimeUs * 1000
-        val delay = (startTime + presentationTimeUs) - System.nanoTime()
-        if (delay > 0) {
-            Thread.sleep(delay / 1_000_000, (delay % 1_000_000).toInt())
+        val presentationTimeNs = bufferInfo.presentationTimeUs * 1000
+        val adjustedTimeNs = startTime + presentationTimeNs + pauseOffsetNs
+        val delayNs = adjustedTimeNs - System.nanoTime()
+
+        if (delayNs > 0) {
+            Thread.sleep(delayNs / 1_000_000, (delayNs % 1_000_000).toInt())
         }
         mediaCodec.releaseOutputBuffer(outputBufferId, true)
     }
