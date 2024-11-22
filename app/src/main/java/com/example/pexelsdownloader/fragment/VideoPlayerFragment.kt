@@ -39,12 +39,13 @@ class VideoPlayerFragment : Fragment() {
 
     private var playbackSpeed = 1.0f // Default speed is 1.0x
 
+    private var isStopped = true
+
+    private var isFirstTime = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
-
-
     }
 
     override fun onCreateView(
@@ -66,6 +67,16 @@ class VideoPlayerFragment : Fragment() {
             if (isPaused) {
                 resumeVideo()
             }
+            if (isStopped && videoUriList.isNotEmpty()) {
+                if (currentVideoIndex >= videoUriList.size) {
+                    currentVideoIndex = 0;
+                }
+                startVideo()
+                Log.d("ibListVideo", "playNextVideo")
+            }
+        }
+        binding.ibListVideo.setOnClickListener{
+
         }
         binding.ibSpeedUp.setOnClickListener {
             playbackSpeed += 0.25f // Increase speed by 0.25x
@@ -89,7 +100,7 @@ class VideoPlayerFragment : Fragment() {
         textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
                 if (videoUriList.isNotEmpty()) {
-                    playNextVideo(Surface(surfaceTexture))
+                    playNextVideo(Surface(textureView.surfaceTexture))
                 }
             }
 
@@ -135,7 +146,11 @@ class VideoPlayerFragment : Fragment() {
             }
 
             Log.d("MainActivity", "Selected video URIs: $videoUriList")
-            playNextVideo(Surface(textureView.surfaceTexture))
+        }
+        if (isFirstTime) {
+            startVideo()
+            isFirstTime = false
+            isStopped = false
         }
     }
 
@@ -151,6 +166,8 @@ class VideoPlayerFragment : Fragment() {
                 val videoUri = videoUriList[currentVideoIndex]
                 currentVideoIndex++
                 playVideo(surface, videoUri)
+            } else {
+                isStopped = true
             }
         }
     }
@@ -266,6 +283,10 @@ class VideoPlayerFragment : Fragment() {
         pauseStartNs = System.nanoTime() // Record pause start time
     }
 
+    private fun startVideo() {
+        playNextVideo(Surface(textureView.surfaceTexture))
+        isStopped = false
+    }
     private fun resumeVideo() {
         isPaused = false
         pauseOffsetNs += System.nanoTime() - pauseStartNs // Add paused duration
