@@ -76,7 +76,7 @@ class VideoPlayerFragment : Fragment() {
             }
         }
         binding.ibListVideo.setOnClickListener{
-
+            openListVideoUri()
         }
         binding.ibSpeedUp.setOnClickListener {
             playbackSpeed += 0.25f // Increase speed by 0.25x
@@ -293,6 +293,10 @@ class VideoPlayerFragment : Fragment() {
         synchronized(pauseLock) {
             pauseLock.notifyAll() // Wake up the decoding thread
         }
+    }
+    fun openListVideoUri() {
+        childFragmentManager.beginTransaction()
+            .replace(binding.fragmentVideoUriList.id, ListVideoUriFragment.newInstance()).commit()
     }
 
 }
