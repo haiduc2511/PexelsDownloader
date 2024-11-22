@@ -7,6 +7,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Surface
@@ -19,12 +20,17 @@ import com.example.pexelsdownloader.databinding.FragmentVideoPlayerBinding
 
 
 class VideoPlayerFragment : Fragment() {
+    private var videoUris: List<Uri> = ArrayList()
+
     private lateinit var binding: FragmentVideoPlayerBinding
     private lateinit var mediaCodec: MediaCodec
     private lateinit var mediaExtractor: MediaExtractor
 
     private val PICK_VIDEO_REQUEST = 1
     private var isPlaying = false
+    private var isAutoReplayEnabled = false
+
+    private var currentVideoNumber = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,13 +60,23 @@ class VideoPlayerFragment : Fragment() {
             }
         }
 
+        binding.ibAutoReplay.setOnClickListener {
+            isAutoReplayEnabled = !isAutoReplayEnabled
+            val iconRes = if (isAutoReplayEnabled) R.drawable.ic_auto_replay_enabled else R.drawable.ic_auto_replay_disabled
+            binding.ibAutoReplay.setImageResource(iconRes)
+        }
+
+
         binding.textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureAvailable(surfaceTexture: android.graphics.SurfaceTexture, width: Int, height: Int) {
-                // Surface ready for playback
-            }
+            override fun onSurfaceTextureAvailable(surfaceTexture: android.graphics.SurfaceTexture, width: Int, height: Int) {}
 
             override fun onSurfaceTextureSizeChanged(surface: android.graphics.SurfaceTexture, width: Int, height: Int) {}
-            override fun onSurfaceTextureDestroyed(surface: android.graphics.SurfaceTexture): Boolean = true
+
+            override fun onSurfaceTextureDestroyed(surface: android.graphics.SurfaceTexture): Boolean {
+//                clearVideo()
+                return true
+            }
+
             override fun onSurfaceTextureUpdated(surface: android.graphics.SurfaceTexture) {}
         }
 
@@ -69,7 +85,7 @@ class VideoPlayerFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance() =
             VideoPlayerFragment().apply {
                 arguments = Bundle().apply {
                 }
@@ -82,7 +98,7 @@ class VideoPlayerFragment : Fragment() {
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             addCategory(Intent.CATEGORY_OPENABLE)
         }
-        startActivityForResult(Intent.createChooser(intent, "duma"), PICK_VIDEO_REQUEST)
+        startActivityForResult(Intent.createChooser(intent, "Getting image Uris"), PICK_VIDEO_REQUEST)
     }
 
     private fun clearVideo() {
@@ -101,14 +117,32 @@ class VideoPlayerFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_VIDEO_REQUEST && resultCode == Activity.RESULT_OK) {
-            val videoUri: Uri? = data?.data
-            videoUri?.let { playVideo(it) }
+            val clipData = data?.clipData
+            val uris = mutableListOf<Uri>()
+
+            if (clipData != null) {
+                // Handle multiple selected videos
+                for (i in 0 until clipData.itemCount) {
+                    uris.add(clipData.getItemAt(i).uri)
+                }
+            } else {
+                // Handle single video selection
+                data?.data?.let { uris.add(it) }
+            }
+
+            videoUris = uris
+
+            Log.d("Lay URI Video", uris.toString())
+
+            // Process the URIs
+            playVideo(videoUris.get(currentVideoNumber))
         }
+
     }
 
     private fun playVideo(uri: Uri) {
         try {
-            initializeMediaComponents(uri)
+            initializeMediaComponents(uri, Surface(binding.textureView.surfaceTexture))
             val startTime = System.nanoTime()
             startDecodingThread(startTime)
         } catch (e: Exception) {
@@ -116,23 +150,24 @@ class VideoPlayerFragment : Fragment() {
         }
     }
 
-    private fun initializeMediaComponents(uri: Uri) {
-        // Initialize MediaExtractor
+    private fun initializeMediaComponents(uri: Uri, surface: Surface) {
+        if (!surface.isValid) {
+            throw IllegalArgumentException("Invalid Surface provided for playback")
+        }
+
         mediaExtractor = MediaExtractor().apply {
             setDataSource(requireContext(), uri, null)
         }
-
-        // Get video format and MIME type
         val format = mediaExtractor.getTrackFormat(0)
         val mimeType = format.getString(MediaFormat.KEY_MIME) ?: throw IllegalArgumentException("Invalid MIME type")
-
-        // Initialize MediaCodec
-        mediaCodec = MediaCodec.createDecoderByType(mimeType).apply {
-            configure(format, Surface(binding.textureView.surfaceTexture), null, 0)
-            start()
+        if (!surface.isValid) {
+            throw IllegalArgumentException("Invalid Surface provided for playback")
         }
 
-        // Select the video track
+        mediaCodec = MediaCodec.createDecoderByType(mimeType).apply {
+            configure(format, surface, null, 0)
+            start()
+        }
         mediaExtractor.selectTrack(0)
     }
     private var isPaused = false
@@ -187,6 +222,14 @@ class VideoPlayerFragment : Fragment() {
                         0,
                         MediaCodec.BUFFER_FLAG_END_OF_STREAM
                     )
+
+                    if (isAutoReplayEnabled) {
+                        Thread.sleep(500) // Optional delay for smoother restart
+                        restartVideo()
+                    } else {
+                        playNextVideo()
+                    }
+
                     return true
                 } else {
                     mediaCodec.queueInputBuffer(
@@ -236,6 +279,36 @@ class VideoPlayerFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         clearVideo() // Clean up resources
+    }
+    private fun restartVideo() {
+        val surfaceTexture = binding.textureView.surfaceTexture
+        if (surfaceTexture != null) {
+            val surface = Surface(surfaceTexture)
+            mediaCodec.reset()
+            initializeMediaComponents(videoUris[currentVideoNumber], surface)
+            startDecodingThread(System.nanoTime())
+        } else {
+            println("SurfaceTexture is null, cannot replay video.")
+        }
+    }
+
+    private fun playNextVideo() {
+        currentVideoNumber = (currentVideoNumber + 1) % videoUris.size
+        val nextVideoUri = videoUris[currentVideoNumber]
+
+        val surfaceTexture = binding.textureView.surfaceTexture
+        if (surfaceTexture != null) {
+            val surface = Surface(surfaceTexture)
+            clearVideo() // Release resources for the current video
+            try {
+                initializeMediaComponents(nextVideoUri, surface)
+                startDecodingThread(System.nanoTime())
+            } catch (e: Exception) {
+                Log.e("VideoPlayer", "Error while playing next video", e)
+            }
+        } else {
+            println("SurfaceTexture is null, cannot play next video.")
+        }
     }
 
 }
