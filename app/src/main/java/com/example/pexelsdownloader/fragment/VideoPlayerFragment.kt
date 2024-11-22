@@ -296,7 +296,7 @@ class VideoPlayerFragment : Fragment() {
     }
     fun openListVideoUri() {
         childFragmentManager.beginTransaction()
-            .replace(binding.fragmentVideoUriList.id, ListVideoUriFragment.newInstance()).commit()
+            .replace(binding.fragmentVideoUriList.id, ListVideoUriFragment.newInstance(videoUriList)).commit()
     }
 
 }
