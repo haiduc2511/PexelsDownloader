@@ -7,26 +7,35 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.pexelsdownloader.databinding.ItemVideoUriBinding
 
 class VideoUriAdapter(
     private val videoUris: MutableList<Uri>,
 ) : RecyclerView.Adapter<VideoUriAdapter.VideoUriViewHolder>() {
 
 
+    inner class VideoUriViewHolder(val binding: ItemVideoUriBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(uri: Uri) {
+            binding.uri = uri
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoUriViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_video_uri, parent, false)
-        return VideoUriViewHolder(view)
+        val binding = ItemVideoUriBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return VideoUriViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: VideoUriViewHolder, position: Int) {
-        val videoUri = videoUris[position]
-        holder.tvVideoUri.text = videoUri.toString()
+        holder.bind(videoUris[position])
+        holder.binding.ibDeleteUri.setOnClickListener {
+            videoUris.removeAt(position)
+            notifyDataSetChanged()
+        }
     }
 
     override fun getItemCount(): Int = videoUris.size
-
-    inner class VideoUriViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvVideoUri: TextView = itemView.findViewById(R.id.tv_video_uri)
-    }
 
 }

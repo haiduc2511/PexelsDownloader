@@ -160,7 +160,7 @@ class VideoPlayerFragment : Fragment() {
             currentVideoIndex++
             playVideo(surface, videoUri)
         } else {
-            if (isOnAutoReplay) {
+            if (isOnAutoReplay && videoUriList.isNotEmpty()) {
                 Log.d("MainActivity", "All videos played.")
                 currentVideoIndex = 0;
                 val videoUri = videoUriList[currentVideoIndex]
