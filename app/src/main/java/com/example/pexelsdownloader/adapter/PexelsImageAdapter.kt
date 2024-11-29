@@ -201,7 +201,7 @@ class PexelsImageAdapter(
     val downloadSemaphore = Semaphore(maxConcurrentDownloads)
 
     fun downloadFileToGalleryByHttpsUrlConnection(position: Int, outputFilePath: String, progressCallback: (Long) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Default).launch {
             downloadSemaphore.acquire()
             try {
                 val photoLink = photoLinks[position]
